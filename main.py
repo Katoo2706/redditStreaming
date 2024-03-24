@@ -3,49 +3,65 @@ import logging
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from kafka import KafkaAdminClient
-from kafka.admin import NewTopic, ConfigResource, ConfigResourceType
-from kafka.errors import TopicAlreadyExistsError
+from confluent_kafka.admin import AdminClient, NewTopic, ConfigResource
+from confluent_kafka.error import KafkaException
 
-logger = logging.getLogger()
+from src.conf import topics_conf
+from src.routers import kafka_producer
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO,
+                    # filename="log.log", filemode="a",
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                    )
 
 load_dotenv(verbose=True)
 
 app = FastAPI()
 
+app.include_router(kafka_producer.router)
+
 
 @app.on_event('startup')
 async def startup_event():
-    client = KafkaAdminClient(bootstrap_servers=os.environ['BOOSTRAP_SERVERS'])
+    client = AdminClient(topics_conf)
     topics = [
-        NewTopic(name=os.environ['TOPICS_PEOPLE_BASIC_NAME'],
+        NewTopic(topic=os.environ['TOPICS_PEOPLE_BASIC_NAME'],
                  num_partitions=3,
                  replication_factor=3),
-        NewTopic(name=f"{os.environ['TOPICS_PEOPLE_BASIC_NAME']}.short",
+        NewTopic(topic=f"{os.environ['TOPICS_PEOPLE_BASIC_NAME']}.short",
                  num_partitions=3,
                  replication_factor=3,
-                 topic_configs={
-                     'retention.ms': '360000'
-                 }
+                 config={
+                     'retention.ms': '360000'}
                  ),
     ]
-    for topic in topics:
+    response = client.create_topics(topics)
+    for topic, f in response.items():
         try:
-            client.create_topics([topic])
-        except TopicAlreadyExistsError:
-            logger.warning(f"Topic {topic.name} already exists, 400")
+            f.result()
+            logger.info(f"Topic {topic} created.")
+        except KafkaException as e:
+            logger.error(f"Failed to create topic {e}")
 
     # Update config after topic creation
-    cfg_resource_update = ConfigResource(
-        ConfigResourceType.TOPIC,
-        os.environ['TOPICS_PEOPLE_BASIC_NAME'],
-        configs={
+    cfg_resource_update = [ConfigResource(
+        restype=ConfigResource.Type.TOPIC,
+        name=os.environ['TOPICS_PEOPLE_BASIC_NAME'],
+        set_config={
             'retention.ms': '360000'
-        } # Configs: min.insync.replicas=2,retention.ms=360000 will be shown up in describe
-    )
-    client.alter_configs([cfg_resource_update])
+        }
+    )]
 
-    client.close()
+    fs = client.alter_configs(cfg_resource_update)
+
+    # Wait for operation to finish.
+    for res, f in fs.items():
+        try:
+            f.result()  # empty, but raises exception on failure
+            logger.info(f"{res} configuration successfully altered")
+        except Exception:
+            raise
 
 
 @app.get('/hello-world')
