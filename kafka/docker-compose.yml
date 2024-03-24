@@ -1,5 +1,16 @@
 version: '3.9'
 services:
+  kafdrop:
+      image: obsidiandynamics/kafdrop
+      restart: always
+      ports:
+        - "9000:9000"
+      environment:
+        KAFKA_BROKERCONNECT: "broker0:29092,broker1:29093,broker2:29094"
+      depends_on:
+        - "broker0"
+        - "broker1"
+        - "broker2"
   zk:
     image: confluentinc/cp-zookeeper:7.6.0
     hostname: zk
@@ -14,6 +25,7 @@ services:
     image: confluentinc/cp-kafka:7.6.0
     hostname: broker0
     container_name: broker0
+    restart: always
     depends_on:
       - zk
     ports:
@@ -32,6 +44,7 @@ services:
     image: confluentinc/cp-kafka:7.6.0
     hostname: broker1
     container_name: broker1
+    restart: always
     depends_on:
       - zk
     ports:
@@ -50,6 +63,7 @@ services:
     image: confluentinc/cp-kafka:7.6.0
     hostname: broker2
     container_name: broker2
+    restart: always
     depends_on:
       - zk
     ports:
@@ -64,7 +78,7 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_NUM_PARTITIONS: 3
 
-  schema-registry:
+  schema-registry: # https://docs.confluent.io/platform/current/installation/docker/config-reference.html#sr-long-configuration
     image: confluentinc/cp-schema-registry:7.6.0
     hostname: schema-registry
     container_name: schema-registry
@@ -78,6 +92,7 @@ services:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker0:29092,broker1:29093,broker2:29094'
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_SCHEMA_COMPABILITY_LEVEL: FULL
 
   kafka-connect:
     image: confluentinc/cp-kafka-connect-base:7.6.0
