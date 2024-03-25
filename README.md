@@ -17,6 +17,7 @@ To trigger the streaming
 - Kafka API for python:
   - [Confluence_kafka](https://docs.confluent.io/kafka-clients/python/current/overview.html)
   - [Kafka-python](https://kafka-python.readthedocs.io/en/master/) (Last updated in 2020 :( )
+- Confluence Schema Registry.
 
 ### Kafdrop
 To monitor the topics, messages from all broker. If new topics / messages are created we can see that on Kafdrop.
