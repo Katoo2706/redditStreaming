@@ -8,14 +8,12 @@ Register in main.py: app.include_router(items.router)
 import logging
 import sys
 
-from fastapi import APIRouter
-from confluent_kafka import TopicPartition
+
 from confluent_kafka.error import KafkaError, KafkaException
 
 from .utils import make_consumer
 from .models import Topic
 
-# router = APIRouter()
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

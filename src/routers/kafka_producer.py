@@ -10,13 +10,13 @@ from typing import List
 from faker import Faker
 from fastapi import APIRouter
 
-from .models import CreatePeopleCommand, Person
+from .models import CreatePeopleCommand, PersonProducer
 from .utils import make_producer, delivery_callback
 
 router = APIRouter()
 
 
-@router.post('/api/people', status_code=201, response_model=List[Person])
+@router.post('/api/people', status_code=201, response_model=List[PersonProducer])
 async def kafka_produce_people(cmd: CreatePeopleCommand):
     """
     Post request to send data into Kafka topic, return expected status_code 201. Path parameters: ("/items/{item_id}")
@@ -26,7 +26,7 @@ async def kafka_produce_people(cmd: CreatePeopleCommand):
     :param cmd: count of the People - using faker data
     :return: List of defined Person
     """
-    people: List[Person] = []
+    people: List[PersonProducer] = []
 
     # create fake data
     faker = Faker()
@@ -34,9 +34,9 @@ async def kafka_produce_people(cmd: CreatePeopleCommand):
     producer = make_producer()
 
     for _ in range(cmd.count):
-        person = Person(id=str(uuid.uuid4()),
-                        name=faker.name(),
-                        title=faker.job().title())
+        person = PersonProducer(id=str(uuid.uuid4()),
+                                name=faker.name(),
+                                title=faker.job().title())
         people.append(person)
 
         producer.produce(
