@@ -7,3 +7,4 @@ Faker==24.2.0
 pydantic==2.6.4
 prawcore~=2.4.0
 confluent-kafka==2.3.0
+fastavro==1.9.4
