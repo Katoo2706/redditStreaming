@@ -11,6 +11,14 @@ producer_config = {
     'client.id': socket.gethostname()
 }
 
+avro_producer_config = {
+    **producer_config,
+    'linger.ms': 300,
+    'enable.idempotence': 'true',
+    'max.in.flight.requests.per.connection': 1,
+    'partitioner': 'murmur2_random'
+}
+
 """
 To scale out the number of consumers within the group, you would typically create multiple instances of your consumer application, 
 each with the same 'group.id' specified in their configuration. Kafka will then automatically distribute the partitions 
@@ -27,4 +35,10 @@ consumer_config = {
     'client.id': socket.gethostname(),
     'auto.offset.reset': 'earliest',
     'enable.auto.commit': 'false',
+}
+
+
+avro_consumer_config = {
+    **consumer_config,
+    'auto.offset.reset': 'latest'  # test key replacement
 }
