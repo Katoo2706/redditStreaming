@@ -151,3 +151,8 @@ Reference on docker: https://docs.confluent.io/platform/current/installation/doc
 Configuration parameters: https://docs.confluent.io/platform/current/schema-registry/installation/config.html#sr-configuration-reference-for-cp
 
 See the compatibility level at endpoint: http://localhost:8081/config
+
+Description for Schema compatibility: https://docs.confluent.io/platform/current/schema-registry/fundamentals/schema-evolution.html#compatibility-types
+- When we add fields, this must be OPTIONAL FIELDS -> Because old schema won't have data for that fields.
+
+
