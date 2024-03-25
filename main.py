@@ -7,7 +7,7 @@ from confluent_kafka.admin import AdminClient, NewTopic, ConfigResource
 from confluent_kafka.error import KafkaException
 
 from src.conf import topics_conf
-from src.routers import kafka_producer
+from src.routers import kafka_producer, kafka_avro_producer
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,
@@ -20,7 +20,7 @@ load_dotenv(verbose=True)
 app = FastAPI()
 
 app.include_router(kafka_producer.router)
-
+app.include_router(kafka_avro_producer.router)
 
 @app.on_event('startup')
 async def startup_event():
@@ -29,7 +29,7 @@ async def startup_event():
         NewTopic(topic=os.environ['TOPICS_PEOPLE_BASIC_NAME'],
                  num_partitions=3,
                  replication_factor=3),
-        NewTopic(topic=f"{os.environ['TOPICS_PEOPLE_BASIC_NAME']}.short",
+        NewTopic(topic=os.environ['TOPIC_PEOPLE_AVRO_NAME'],
                  num_partitions=3,
                  replication_factor=3,
                  config={
@@ -37,12 +37,12 @@ async def startup_event():
                  ),
     ]
     response = client.create_topics(topics)
-    for topic, f in response.items():
+    for topic, future in response.items():
         try:
-            f.result()
+            future.result()
             logger.info(f"Topic {topic} created.")
         except KafkaException as e:
-            logger.error(f"Failed to create topic {e}")
+            logger.warning(f"Failed to create topic {e}")
 
     # Update config after topic creation
     cfg_resource_update = [ConfigResource(
