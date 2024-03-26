@@ -8,9 +8,41 @@ services:
       environment:
         KAFKA_BROKERCONNECT: "broker0:29092,broker1:29093,broker2:29094"
       depends_on:
-        - "broker0"
-        - "broker1"
-        - "broker2"
+        - broker0
+        - broker1
+        - broker2
+        - schema-registry
+
+  kafka-ui: # https://github.com/provectus/kafka-ui/blob/master/documentation/compose/kafka-ui-arm64.yaml
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - "8085:8085"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker0:29092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9997
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: first
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://kafka-connect:8083
+      DYNAMIC_CONFIG_ENABLED: 'true'  # not necessary, added for tests
+      KAFKA_CLUSTERS_0_AUDIT_TOPICAUDITENABLED: 'true'
+      KAFKA_CLUSTERS_0_AUDIT_CONSOLEAUDITENABLED: 'true'
+      KAFKA_CLUSTERS_1_NAME: second_local
+      KAFKA_CLUSTERS_1_BOOTSTRAPSERVERS: broker1:29093
+      KAFKA_CLUSTERS_1_METRICS_PORT: 9998
+      KAFKA_CLUSTERS_1_SCHEMAREGISTRY: http://schema-registry:8081
+      KAFKA_CLUSTERS_2_NAME: third_local
+      KAFKA_CLUSTERS_2_BOOTSTRAPSERVERS: broker2:29094
+      KAFKA_CLUSTERS_2_METRICS_PORT: 9999
+      KAFKA_CLUSTERS_2_SCHEMAREGISTRY: http://schema-registry:8081
+    depends_on:
+      - broker0
+      - broker1
+      - broker2
+      - kafka-connect
+      - schema-registry
+
   zk:
     image: confluentinc/cp-zookeeper:7.6.0
     hostname: zk
@@ -95,7 +127,9 @@ services:
       SCHEMA_REGISTRY_SCHEMA_COMPABILITY_LEVEL: FULL
 
   kafka-connect:
-    image: confluentinc/cp-kafka-connect-base:7.6.0
+    build:
+      context: ./datagen
+      dockerfile: Dockerfile
     container_name: kafka-connect
     hostname: kafka-connect
     depends_on:
@@ -124,3 +158,16 @@ services:
     container_name: cli-tools
     entrypoint: "sleep infinity"
     restart: always
+
+#  kafka-init-topics:
+#    image: confluentinc/cp-kafka:7.6.0
+#    volumes:
+#      - ./data/message.json:/data/message.json
+#    depends_on:
+#      - kafka1
+#    command: "bash -c 'echo Waiting for Kafka to be ready... && \
+#                 cub kafka-ready -b kafka1:29092 1 30 && \
+#                 kafka-topics --create --topic second.users --partitions 3 --replication-factor 1 --if-not-exists --bootstrap-server kafka1:29092 && \
+#                 kafka-topics --create --topic second.messages --partitions 2 --replication-factor 1 --if-not-exists --bootstrap-server kafka1:29092 && \
+#                 kafka-topics --create --topic first.messages --partitions 2 --replication-factor 1 --if-not-exists --bootstrap-server kafka0:29092 && \
+#                 kafka-console-producer --bootstrap-server kafka1:29092 -topic second.users < /data/message.json'"
