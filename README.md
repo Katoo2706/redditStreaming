@@ -1,9 +1,10 @@
 # Reddis streaming data pipeline
 
 ## Start FastAPI server
-```bash
-python3 -m uvicorn main:app --reload --port 8088
-```
+> OS: Docker-compose
+> Host: http://localhost:8000/
+
+Create topics request: ``
 
 ## Architecture:
 ### FastAPI
@@ -30,6 +31,11 @@ Kafdrop topics:
 
 Kafdrop messages:
 ![kafdrop-messages.png](kafka%2Fmedia%2Fkafdrop-messages.png)
+
+### Kafka UI - A comprehensive solution for Kafka UI.
+> To monitor the topics, messages, connectors & Schema Registry.
+
+Reference: https://docs.kafka-ui.provectus.io/
 
 ### Pyspark
 
