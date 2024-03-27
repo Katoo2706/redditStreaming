@@ -9,4 +9,3 @@ RUN confluent-hub install --no-prompt confluentinc/kafka-connect-datagen:0.4.0
 
 # MongoDB connector
 RUN confluent-hub install --no-prompt mongodb/kafka-connect-mongodb:1.11.2
-
