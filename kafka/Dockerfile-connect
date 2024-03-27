@@ -1,0 +1,12 @@
+FROM confluentinc/cp-kafka-connect-base:7.6.0
+
+ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components,/data/connect-jars"
+
+# Install connector: https://www.confluent.io/hub/
+# --no-prompt: Proceeds without waiting for manual confirmation.
+# Datagen connector
+RUN confluent-hub install --no-prompt confluentinc/kafka-connect-datagen:0.4.0
+
+# MongoDB connector
+RUN confluent-hub install --no-prompt mongodb/kafka-connect-mongodb:1.11.2
+

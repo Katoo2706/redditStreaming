@@ -1,17 +1,33 @@
 version: '3.9'
 
 services:
-  fast-api:
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    restart: always
+  spark-master:
+    image: spark-master:latest
     ports:
-      - "8000:8000"
-    env_file:
-      - .env
+      - "4040:4040"
+      - "9090:8080"
+      - "7077:7077"
     volumes:
-      - .:/app
+       - ./apps:/opt/spark-apps
+       - ./data:/opt/spark-data
+    environment:
+      - "SPARK_LOCAL_IP=spark-master"
+    networks:
+      - es-net
+
+  spark-worker:
+    image: spark-worker:latest
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_DRIVER_MEMORY=128m
+      - SPARK_EXECUTOR_MEMORY=256m
+    volumes:
+       - ./apps:/opt/spark-apps
+       - ./data:/opt/spark-data
     networks:
       - es-net
 
@@ -32,22 +48,22 @@ services:
     environment:
       - xpack.security.enabled=false
       - "discovery.type=single-node"
-    ports:
-      - "9200:9200"
     networks:
       - es-net
+    ports:
+      - 9200:9200
 
   kibana:
     container_name: kb-container
     image: docker.elastic.co/kibana/kibana:7.11.0
     environment:
       - ELASTICSEARCH_HOSTS=http://es-container:9200
+    networks:
+      - es-net
     depends_on:
       - elasticsearch
     ports:
-      - "5601:5601"
-    networks:
-      - es-net
+      - 5601:5601
 
 networks:
   es-net:

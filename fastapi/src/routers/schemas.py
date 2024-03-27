@@ -18,6 +18,7 @@ people_value_v1 = """{
 
 
 # Schema changes
+# Added fields must be OPTIONAL FIELDS & have DEFAULT VALUE
 people_value_v2 = """{
     "namespace": "com.avro.exampledomain",
     "name": "Person",
@@ -25,11 +26,13 @@ people_value_v2 = """{
     "fields": [
         {
             "name": "first_name",
-            "type": "string"
+            "type": ["null", "string"],
+            "default": null
         },
         {
             "name": "last_name",
-            "type": "string"
+            "type": ["null", "string"],
+            "default": null
         },
         {
             "name": "title",

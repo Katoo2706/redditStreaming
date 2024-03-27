@@ -1,6 +1,9 @@
 """
 Pydantic is the most widely used data validation library for Python.
+- Valid response_model for any HTTP request.
+- Valid fields & value type for request with body.
 """
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -14,8 +17,11 @@ class Person(BaseModel):
 
 
 class PersonV2(BaseModel):
-    first_name: str
-    last_name: str
+    """
+    This must be OPTIONAL FIELDS FOR SCHEMA REVOLUTION
+    """
+    first_name: Optional[str]
+    last_name: Optional[str]
     title: str
 
 
@@ -23,8 +29,14 @@ class PersonProducer(Person):
     id: str
 
 
-class Topic(BaseModel):
+class TopicCommand(BaseModel):
     name: str
+
+
+class Topic(BaseModel):
+    topic: str
+    num_partitions: int
+    replication_factor: int
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ from confluent_kafka.schema_registry.avro import AvroSerializer, AvroDeserialize
 
 from src.conf import producer_config, consumer_config, avro_producer_config
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 def encoder(data):
@@ -74,11 +74,7 @@ class ProducerCallback:
         if err:
             logger.error(f'ERROR: Message failed delivery: {err}')
         else:
-            logger.info(f"""
-                Produced {self.person},
-                to partition {msg.partition(): 12},
-                at offset {msg.offset(): 12}
-            """)
+            logger.info(f"""Produced {self.person}, partition {msg.partition()}, offset {msg.offset()}""")
 
 
 def make_consumer(group_id: str):

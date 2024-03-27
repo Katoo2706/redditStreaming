@@ -1,0 +1,15 @@
+{
+  "name": "sink-technologists-mongodb",
+  "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+  "connection.uri": "mongodb://admin:admin@mongodb:27017",
+  "database": "kafka",
+  "collection": "technologists",
+  "topics": "technologists",
+  "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+  "value.converter": "io.confluent.connect.avro.AvroConverter",
+  "value.converter.schema.registry.url": "http://schema-registry:8081",
+  "value.converter.schemas.enable": "false",
+  "max.interval": 1000,
+  "iterations": 1000,
+  "tasks.max": 1
+}
